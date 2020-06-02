@@ -30,9 +30,9 @@ namespace Ej2SampleWebApplication
             }
         }
 
-        public IActionResult OnPostUpdate(int id)
+        public IActionResult OnPostUpdate([FromBody]int id)
         {
-            var item  = new ItemViewModel
+            var item = new ItemViewModel
             {
                 Id = id,
                 UpdateTime = DateTime.Now,
