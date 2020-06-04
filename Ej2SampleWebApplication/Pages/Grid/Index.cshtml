@@ -3,12 +3,14 @@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
 
 <div>
-    <ejs-grid id="Grid" dataSource="@Model.Items">
-        <e-grid-editSettings allowEditing="true"></e-grid-editSettings>
+    <ejs-grid id="Grid" dataSource="@Model.Items" 
+              enablePersistence="true"
+              showColumnChooser="true" toolbar="@(new List<string> {"ColumnChooser"})">
+        <e-grid-editSettings allowEditing="true" allowEditOnDblClick="false"></e-grid-editSettings>
         <e-grid-columns>
             <e-grid-column field="Id" isPrimaryKey="true" headerText="ID"></e-grid-column>
             <e-grid-column field="Name" headerText="Name"></e-grid-column>
-            <e-grid-column field="UpdateTime" template="#UpdateTimeTemplate" headerText="Update Time"></e-grid-column>
+            <e-grid-column field="UpdateTime" customFormat="@(new { type ="dateTime", format="dd/MM/yyyy hh:mm:ss a" })" headerText="Update Time"></e-grid-column>
             <e-grid-column headerText="Status" template="#FlagTemplate"></e-grid-column>
         </e-grid-columns>
     </ejs-grid>
@@ -17,16 +19,13 @@
 <hr />
 
 <div>
-    <button onclick="updateRow(100);">Update row(id:100). How?</button>
+    <button onclick="updateRow(100);">Update row(id:100).</button>
 </div>
 
 @Html.AntiForgeryToken()
 
 @section Scripts
 {
-    <script id="UpdateTimeTemplate" type="text/x-template">
-        <span>${UpdateTime.toLocaleString()}</span>
-    </script>
     <script id="FlagTemplate" type="text/x-template">
         <div>
             ${if (Flag)}
@@ -39,6 +38,9 @@
         var grid;
         function updateRow(id) {
             grid = document.getElementById('Grid').ej2_instances[0];
+            var value = grid.getRowInfo(grid.getCellFromIndex(1, 2));
+            console.log(value);
+
             $.ajax({
                     type: "POST",
                     url: "@Href("~/Grid/Index?handler=Update")",
@@ -51,9 +53,11 @@
                 })
                 .done(function (obj) {
                     alert(JSON.stringify(obj));
-                    obj.UpdateTime = new Date(obj.UpdateTime);
                     grid.updateRow(id, obj);
-                    
+                    // here we can apply the particular field's cell value only
+                    grid.setCellValue(id, 'Name', "Modified Cell");
+
+
                 })
                 .fail(function () {
                     alert("error");
